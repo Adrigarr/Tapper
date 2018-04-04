@@ -1,6 +1,8 @@
 var Game = new function() {
     var boards = [];
 
+    var board = new GameBoard(false);
+
     // Game Initialization
     this.initialize = function(canvasElementId, sprite_data, callback) {
         this.canvas = document.getElementById(canvasElementId);
@@ -20,12 +22,18 @@ var Game = new function() {
         this.loop();
 
         if (this.mobile) {
-            this.setBoard(4, new TouchControls());
+            this.setBoard(5, new TouchControls());
         }
-
         SpriteSheet.load(sprite_data, callback);
-    };
 
+
+        this.setBoard(1, new Background());
+        this.setBoard(2, board);
+        this.setBoard(3, new TitleScreen(false, "You win!", 'Press space to start playing', playGame));
+        this.setBoard(4, new TitleScreen(false, "You lose!", 'Press space to start playing', playGame));
+        /*this.setBoard(6, new GamePoints(0));*/
+        this.setBoard(7, new TitleScreen(true, 'Tapper', 'Press space to start playing', playGame));
+    };
 
     // Handle Input
     var KEY_CODES = { 38: 'up', 40: 'down', 32: 'space' };
@@ -47,7 +55,6 @@ var Game = new function() {
         }, false);
     };
 
-
     var lastTime = new Date().getTime();
     var maxTime = 1 / 30;
     // Game Loop
@@ -58,7 +65,7 @@ var Game = new function() {
         if (dt > maxTime) { dt = maxTime; }
 
         for (var i = 0, len = boards.length; i < len; i++) {
-            if (boards[i]) {
+            if (boards[i] && boards[i].activate) {
                 boards[i].step(dt);
                 boards[i].draw(Game.ctx);
             }
@@ -67,8 +74,9 @@ var Game = new function() {
     };
 
     // Change an active game board
-    this.setBoard = function(num, board) { boards[num] = board; };
-
+    this.setBoard = function(num, board) {
+        boards[num] = board;
+    };
 
     this.setupMobile = function() {
         var container = document.getElementById("container"),
@@ -108,6 +116,12 @@ var Game = new function() {
         this.canvas.style.position = 'absolute';
         this.canvas.style.left = "0px";
         this.canvas.style.top = "0px";
-
     };
+
+    this.activateBoard = function(num) {
+        boards[num].activateClass();
+    }
+    this.deactivateBoard = function(num) {
+        boards[num].deactivateClass();
+    }
 };
